@@ -6,7 +6,7 @@ GeneratorConfig::~GeneratorConfig() {
 }
 
 TerrainType GeneratorConfig::GetTerrainTypeByNoise(float noise) {
-    if (noise >= 0) {
+    if (noise >= -0.8) {
         return TerrainType::SURFACE;
     }
     return TerrainType::OCEAN;

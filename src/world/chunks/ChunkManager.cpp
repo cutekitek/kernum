@@ -1,12 +1,16 @@
 #include "ChunkManager.h"
 
+#include <iostream>
+
 
 std::shared_ptr<Chunk> ChunkManager::LoadChunk(Coords chunkCoords) {
     auto chunk = this->chunks[chunkCoords];
     if (chunk == nullptr) {
         chunk = generator->NewChunk(chunkCoords);
         this->chunks[chunkCoords] = chunk;
+        std::cout << "Chunk created at" << chunkCoords.x << " " << chunkCoords.y << std::endl;
     }
+
     return chunk;
 }
 
@@ -18,5 +22,5 @@ std::shared_ptr<Tile> ChunkManager::GetTileByCoords(FCoords worldCoords) {
 }
 
 Coords ChunkManager::worldCordsToChunkCoords(FCoords cords) {
-    return  Coords{((int)cords.x / CHUNK_SIZE + (int)cords.x % CHUNK_SIZE), ((int)cords.y / CHUNK_SIZE + (int)cords.y % CHUNK_SIZE)};
+    return  Coords{(int)cords.x / CHUNK_SIZE, (int)cords.y / CHUNK_SIZE};
 }
