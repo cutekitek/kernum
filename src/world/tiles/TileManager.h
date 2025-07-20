@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -16,8 +17,8 @@
 
 class TileManager {
     const std::filesystem::path baseTexturePath = "tiles";
-    std::vector<std::shared_ptr<Tile> > tiles;
-    std::unordered_map<std::string, std::shared_ptr<Tile> > tilesMap;
+    std::vector<Tile> tiles;
+    std::unordered_map<std::string, int> tilesMap;
     std::shared_ptr<TextureManager> textureManager;
 
 public:
@@ -29,13 +30,13 @@ public:
 
     ~TileManager() = default;
 
-    std::shared_ptr<Tile> CreateTile(const std::string &name, const std::string &textureName, bool solid);
+    const Tile* CreateTile(const std::string &name, const std::string &textureName, bool solid);
 
-    const std::vector<std::shared_ptr<Tile> > &GetTiles();
+    const std::vector<Tile> & GetTiles();
 
-    std::shared_ptr<Tile> GetTileByName(const std::string &name);
+    const Tile* GetTileByName(const std::string &name);
 
-    std::shared_ptr<Tile> GetTileById(uint32_t tileId);
+    const Tile& GetTileById(uint32_t tileId);
 };
 
 

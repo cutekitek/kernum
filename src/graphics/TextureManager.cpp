@@ -1,22 +1,20 @@
-//
-// Created by user on 13.07.2025.
-//
-
 #include "TextureManager.h"
+#include <SDL3/SDL_error.h>
 #include <SDL3_image/SDL_image.h>
+#include <memory>
 
 
-std::shared_ptr<Texture> TextureManager::LoadTexture(const std::string &fileName) {
+const Texture* TextureManager::LoadTexture(const std::string &fileName) {
     auto path = (basePath / fileName).string();
-    auto texture = textures[path];
-    if (texture != nullptr) {
-        return texture;
+    auto text = textures.find(fileName);
+    if (text != textures.end()) {
+        return text->second.get();
     }
-    SDL_Texture* text = IMG_LoadTexture(renderer, path.c_str());
-    if (text == nullptr) {
+    SDL_Texture* sdlText = IMG_LoadTexture(renderer, path.c_str());
+    if (sdlText == nullptr) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load texture file '%s'! SDL_image Error: %s", path.c_str(), SDL_GetError());
     }
-    texture = std::make_shared<Texture>(text);
-    textures[path] = texture;
-    return texture;
+    auto texture = std::make_unique<Texture>(sdlText);
+    textures[path] = std::move(texture);
+    return textures[path].get();
 }

@@ -1,3 +1,4 @@
+#include <SDL3/SDL_video.h>
 #define SDL_MAIN_USE_CALLBACKS 1
 #define SCREEN_WIDTH 1920
 #define SCREEN_HEIGHT 1080
@@ -53,7 +54,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("examples/renderer/clear", SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("examples/renderer/clear", SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
@@ -67,7 +68,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     auto cfg = std::make_shared<GeneratorConfig>(tileManager);
     auto chunkGenerator = std::make_shared<ChunkGenerator>(cfg, 0);
     chunkManager = std::make_shared<ChunkManager>(chunkGenerator, tileManager);
-    worldRenderer = std::make_shared<WorldRenderer>(chunkManager);
+    worldRenderer = std::make_shared<WorldRenderer>(chunkManager, tileManager);
     return SDL_APP_CONTINUE;
 }
 

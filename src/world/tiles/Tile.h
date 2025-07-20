@@ -15,7 +15,7 @@ public:
         return tile_id;
     }
 
-    [[nodiscard]] const std::shared_ptr<Texture> get_texture() const {
+    [[nodiscard]] const Texture& get_texture() const {
         return texture;
     }
 
@@ -27,14 +27,14 @@ public:
         return name;
     }
 
-    Tile(const uint32_t tileId, const std::string& name, const std::shared_ptr<Texture>& texture, const bool solid) : tile_id(tileId), texture(texture), name(name), solid(solid) {
+    Tile(const uint32_t tileId, const std::string& name, const Texture& texture, const bool solid) : tile_id(tileId), texture(texture), name(name), solid(solid) {
 
     }
 
 
 private:
     uint32_t tile_id;
-    std::shared_ptr<Texture> texture;
+    const Texture& texture;
     const std::string& name;
     bool solid;
 

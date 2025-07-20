@@ -1,6 +1,7 @@
 #ifndef CHUNKMANAGER_H
 #define CHUNKMANAGER_H
 
+#include <cstdint>
 #include <memory>
 #include <unordered_map>
 
@@ -12,7 +13,7 @@
 
 
 class ChunkManager {
-    std::unordered_map<Coords, std::shared_ptr<Chunk>> chunks;
+    std::unordered_map<Coords, std::unique_ptr<Chunk>> chunks;
     std::shared_ptr<ChunkGenerator> generator;
     std::shared_ptr<TileManager> tileManager;
     public:
@@ -22,8 +23,8 @@ class ChunkManager {
           tileManager(tile_manager) {
     }
 
-    std::shared_ptr<Chunk> LoadChunk(Coords worldCords);
-    std::shared_ptr<Tile>  GetTileByCoords(FCoords worldCoords);
+    const Chunk* LoadChunk(FCoords worldCords);
+    inline uint32_t GetChunkSize() {return CHUNK_SIZE;};
 
 private:
     static inline Coords worldCordsToChunkCoords(FCoords cords);

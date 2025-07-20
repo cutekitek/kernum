@@ -4,6 +4,7 @@
 
 #ifndef TEXTUREMANAGER_H
 #define TEXTUREMANAGER_H
+#include <SDL3/SDL_gpu.h>
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -14,7 +15,7 @@
 
 
 class TextureManager {
-    std::unordered_map<std::string, std::shared_ptr<Texture>> textures;
+    std::unordered_map<std::string, std::unique_ptr<Texture>> textures;
     std::filesystem::path basePath;
     SDL_Renderer* renderer;
     public:
@@ -24,7 +25,7 @@ class TextureManager {
     }
 
     ~TextureManager() = default;
-    std::shared_ptr<Texture> LoadTexture(const std::string &fileName);
+    const Texture* LoadTexture(const std::string &fileName);
 };
 
 

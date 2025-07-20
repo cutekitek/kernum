@@ -12,7 +12,7 @@ TerrainType GeneratorConfig::GetTerrainTypeByNoise(float noise) {
     return TerrainType::OCEAN;
 }
 
-std::shared_ptr<Tile> GeneratorConfig::GetTileByNoise(TerrainType type, float noise) {
+const Tile* GeneratorConfig::GetTileByNoise(TerrainType type, float noise) {
     switch (type) {
         case TerrainType::SURFACE:
             return this->tileManager->GetTileByName("grass");

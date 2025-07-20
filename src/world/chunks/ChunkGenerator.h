@@ -14,7 +14,7 @@ class ChunkGenerator {
     public:
     ChunkGenerator(const std::shared_ptr<GeneratorConfig>& config, const int seed);
     ~ChunkGenerator() = default;
-    std::shared_ptr<Chunk> NewChunk(Coords cords);
+    std::unique_ptr<Chunk> NewChunk(Coords cords);
 
 };
 

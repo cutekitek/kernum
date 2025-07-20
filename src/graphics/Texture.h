@@ -7,6 +7,7 @@
 
 class Texture {
     SDL_Texture* texture;
+    
 
 public:
     [[nodiscard]] SDL_Texture * get_texture() const {
@@ -20,8 +21,6 @@ public:
     ~Texture() {
         SDL_DestroyTexture(texture);
     };
-
-
 };
 
 

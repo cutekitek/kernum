@@ -1,10 +1,13 @@
 
 #include "TileManager.h"
+#include "Tile.h"
 
 #include <filesystem>
+#include <functional>
 #include <memory>
+#include <optional>
 
-std::shared_ptr<Tile> TileManager::CreateTile(const std::string& name, const std::string& textureName, bool solid) {
+const Tile* TileManager::CreateTile(const std::string& name, const std::string& textureName, bool solid) {
     uint32_t tileId = this->tiles.size();
 
     auto texture = textureManager->LoadTexture((baseTexturePath / textureName).string());
@@ -12,21 +15,24 @@ std::shared_ptr<Tile> TileManager::CreateTile(const std::string& name, const std
         return nullptr;
     }
 
-    auto tile = std::make_shared<Tile>(tileId, name, texture, solid);
+    auto tile = Tile(tileId, name, *texture, solid);
     this->tiles.push_back(tile);
-    this->tilesMap[name] = tile;
-    return tile;
+    this->tilesMap[name] = tileId;
+    return &this->tiles[tileId];
 }
 
-const std::vector<std::shared_ptr<Tile>> & TileManager::GetTiles() {
+const std::vector<Tile> & TileManager::GetTiles() {
     return this->tiles;
 }
 
-std::shared_ptr<Tile> TileManager::GetTileById(uint32_t tileId) {
+const Tile& TileManager::GetTileById(uint32_t tileId) {
     return this->tiles[tileId];
 }
 
-std::shared_ptr<Tile> TileManager::GetTileByName(const std::string &name) {
-    return this->tilesMap.find(name)->second;
+const Tile* TileManager::GetTileByName(const std::string &name) {
+    auto tileId =  this->tilesMap.find(name);
+    if (tileId == this->tilesMap.end()) {
+        return nullptr;
+    }
+    return &this->tiles[tileId->second];
 }
-

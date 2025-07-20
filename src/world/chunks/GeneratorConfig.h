@@ -22,7 +22,7 @@ class GeneratorConfig {
     ~GeneratorConfig();
 
     static TerrainType GetTerrainTypeByNoise(float noise);
-    std::shared_ptr<Tile> GetTileByNoise(TerrainType type, float noise);
+    const Tile* GetTileByNoise(TerrainType type, float noise);
 
 };
 
