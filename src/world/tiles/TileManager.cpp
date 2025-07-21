@@ -10,7 +10,7 @@
 const Tile* TileManager::CreateTile(const std::string& name, const std::string& textureName, bool solid) {
     uint32_t tileId = this->tiles.size();
 
-    auto texture = textureManager->LoadTexture((baseTexturePath / textureName).string());
+    auto texture = textureAtlas->load_texture((baseTexturePath / textureName).string());
     if (texture == nullptr) {
         return nullptr;
     }
@@ -27,6 +27,10 @@ const std::vector<Tile> & TileManager::GetTiles() {
 
 const Tile& TileManager::GetTileById(uint32_t tileId) {
     return this->tiles[tileId];
+}
+
+const TextureAtlas * TileManager::GetTextureAtlas() const {
+    return textureAtlas.get();
 }
 
 const Tile* TileManager::GetTileByName(const std::string &name) {
