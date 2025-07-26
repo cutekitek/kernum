@@ -8,18 +8,18 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_sdl3.h"
 #include "imgui/imgui_impl_opengl3.h"
-#include "render/TileRenderer.h"
 #include "world/chunks/ChunkManager.h"
 #include "world/tiles/TileManager.h"
 #include "glad/glad.h"
+#include "render/WorldRenderer.h"
 
 static SDL_Window *window = NULL;
-static SDL_Renderer *renderer = NULL;
-
 std::shared_ptr<TileManager> tileManager;
 std::shared_ptr<ChunkManager> chunkManager;
-std::shared_ptr<TileRenderer> worldRenderer;
-std::vector<uint32_t> tiles = std::vector<uint32_t>(SCREEN_WIDTH * SCREEN_HEIGHT, 0);
+std::shared_ptr<WorldRenderer> worldRenderer;
+Camera *camera;
+
+
 const char* frag = R"(
 #version 430 core
 out vec4 FragColor;
@@ -36,21 +36,22 @@ void main()
 
 const char* vert = R"(
 #version 430 core
-layout (location = 0) in vec2 aPos;         // Now in [0, 1] range
+
+layout (location = 0) in vec2 aPos;
+
 layout (location = 1) in vec4 aInstanceUVs;
+layout (location = 2) in vec4 aInstanceTransform;
 
 out vec2 TexCoord;
 
 uniform mat4 projection;
-uniform float tileSize;
-uniform int cols;
 
 void main()
 {
-    float instancePosX = float(gl_InstanceID % cols) * tileSize;
-    float instancePosY = float(gl_InstanceID / cols) * tileSize;
+    vec2 instanceWorldPos = aInstanceTransform.xy;
+    vec2 instanceSize = aInstanceTransform.zw;
 
-    vec2 finalPos = (aPos * tileSize) + vec2(instancePosX, instancePosY);
+    vec2 finalPos = (aPos * instanceSize) + instanceWorldPos;
 
     gl_Position = projection * vec4(finalPos, 0.0, 1.0);
 
@@ -87,7 +88,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    window  = SDL_CreateWindow("Kernum", SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
+    window  = SDL_CreateWindow("Kernum", SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!window) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -100,7 +101,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_Quit();
         return SDL_APP_FAILURE;
     }
-    SDL_GL_SetSwapInterval(0);
+    SDL_GL_SetSwapInterval(1);
     if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         SDL_GL_DestroyContext(context);
@@ -116,13 +117,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
-    // Setup Dear ImGui style
     ImGui::StyleColorsDark();
 
-    // Setup scaling
     float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
     ImGuiStyle& style = ImGui::GetStyle();
-    style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+    style.ScaleAllSizes(main_scale);
     style.FontScaleDpi = main_scale;
 
 
@@ -133,7 +132,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         std::cout << "Failed to ImGui_ImplSDL3_InitForOpenGL" << std::endl;
         return SDL_APP_FAILURE;
     };
-    if (!ImGui_ImplOpenGL3_Init("#version 430 core")) {
+    if (!ImGui_ImplOpenGL3_Init("#version 330 core")) {
         std::cout << "Failed to ImGui_ImplOpenGL3_Init" << std::endl;
         return SDL_APP_FAILURE;
     };
@@ -146,58 +145,50 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     chunkManager = std::make_shared<ChunkManager>(chunkGenerator, tileManager);
 
     auto shader = std::make_shared<Shader>(vert, frag);
-    worldRenderer = std::make_shared<TileRenderer>(shader, tileManager, 32, window);
-    for (int i = 0; i < 120 * 64; i++) {
-        tiles[i] = i % 2 == 0 ? 1 : 0;
-    }
-    worldRenderer->SetTileMap(tiles);
+    camera =  new Camera(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 1.0);
+    worldRenderer = std::make_shared<WorldRenderer>(shader, chunkManager, tileManager, camera);
     return SDL_APP_CONTINUE;
 }
 
-/* This function runs when a new event (mouse input, keypresses, etc) occurs. */
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
-
     if (event->type == SDL_EVENT_QUIT) {
         return SDL_APP_SUCCESS;
     }
+    switch (event->type) {
+        case SDL_EVENT_WINDOW_RESIZED:
+            glViewport(0, 0, event->window.data1, event->window.data2);
+    }
+    camera->DispatchEvent(event);
     ImGui_ImplSDL3_ProcessEvent(event);
     return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
+    camera->Update();
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    worldRenderer->Render();
-
+    auto io = ImGui::GetIO();
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
+    ImGui::Begin("Stats");
+    worldRenderer->Update();
+    worldRenderer->Render();
 
-    {
-        static float f = 0.0f;
-        static int counter = 0;
 
-        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
-        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+    auto bbox = camera->BoundingBox();
+    ImGui::Text("camera x0=%f y0=%f w=%f h=%f z=%f", bbox.x, bbox.y, bbox.width, bbox.height, camera->GetZoom());
 
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-
-        if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-            counter++;
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
-        auto io = ImGui::GetIO();
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-        ImGui::End();
-    }
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+    ImGui::End();
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     if (!SDL_GL_SwapWindow(window)) {
         std::cerr << "Failed to swap window:" << SDL_GetError() << std::endl;
-        return SDL_APP_FAILURE;
+        return SDL_APP_SUCCESS;
     };
     return SDL_APP_CONTINUE;
 }

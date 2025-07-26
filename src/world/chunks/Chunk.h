@@ -16,6 +16,9 @@ class Chunk  {
     explicit Chunk(const Coords &cords, const std::array<uint32_t, CHUNK_SIZE * CHUNK_SIZE> &tiles)
         : cords(cords), tiles(tiles) {
     }
+    const Coords GetCoords() const {
+        return cords;
+    }
     const std::array<uint32_t, CHUNK_SIZE * CHUNK_SIZE>& GetTiles() const {
         return tiles;
     }

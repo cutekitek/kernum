@@ -5,6 +5,10 @@
 
 const Chunk* ChunkManager::LoadChunk(FCoords worldCords) {
     auto chunkCoords = worldCordsToChunkCoords(worldCords);
+    return ChunkManager::LoadChunk(chunkCoords);
+}
+
+const Chunk* ChunkManager::LoadChunk(Coords chunkCoords) {
     auto chunk = this->chunks[chunkCoords].get();
     if (chunk == nullptr) {
         auto generatedChunk = generator->NewChunk(chunkCoords);
@@ -14,9 +18,4 @@ const Chunk* ChunkManager::LoadChunk(FCoords worldCords) {
     }
 
     return chunk;
-}
-
-
-Coords ChunkManager::worldCordsToChunkCoords(FCoords cords) {
-    return  Coords{(int)cords.x / CHUNK_SIZE, (int)cords.y / CHUNK_SIZE};
 }

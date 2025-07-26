@@ -5,18 +5,13 @@
 #include <SDL3/SDL.h>
 
 #include "glad/glad.h"
+#include "glm/glm.hpp"
 
 class Texture {
-public:
-    // UV coordinates: [minU, minV, maxU, maxV]
-    struct UVs {
-        float u1, v1; // Top-left
-        float u2, v2; // Bottom-right
-    };
 
 private:
     GLuint m_parentAtlasID;
-    UVs m_uvs;
+    glm::vec4 m_uvs;
     int m_width;
     int m_height;
 
@@ -25,11 +20,11 @@ public:
     Texture(GLuint parentID, const SDL_Rect& pixelRect, int atlasWidth, int atlasHeight)
         : m_parentAtlasID(parentID), m_width(pixelRect.w), m_height(pixelRect.h)
     {
-        // Convert pixel coordinates to normalized (0.0 to 1.0) texture coordinates.
-        m_uvs.u1 = static_cast<float>(pixelRect.x) / atlasWidth;
-        m_uvs.v1 = static_cast<float>(pixelRect.y) / atlasHeight;
-        m_uvs.u2 = static_cast<float>(pixelRect.x + pixelRect.w) / atlasWidth;
-        m_uvs.v2 = static_cast<float>(pixelRect.y + pixelRect.h) / atlasHeight;
+        m_uvs = glm::vec4(static_cast<float>(pixelRect.x) / atlasWidth,
+                        static_cast<float>(pixelRect.y) / atlasHeight,
+                        static_cast<float>(pixelRect.x + pixelRect.w) / atlasWidth,
+                        static_cast<float>(pixelRect.y + pixelRect.h) / atlasHeight);
+
     }
 
     ~Texture() = default;
@@ -40,7 +35,7 @@ public:
     }
 
     // Get the pre-calculated UV coordinates for this specific region.
-    [[nodiscard]] const UVs& get_uvs() const {
+    [[nodiscard]] const glm::vec4& get_uvs() const {
         return m_uvs;
     }
 

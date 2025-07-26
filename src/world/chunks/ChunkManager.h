@@ -24,10 +24,12 @@ class ChunkManager {
     }
 
     const Chunk* LoadChunk(FCoords worldCords);
+    const Chunk* LoadChunk(Coords chunkCoords);
     inline uint32_t GetChunkSize() {return CHUNK_SIZE;};
+    static Coords worldCordsToChunkCoords(FCoords cords) {
+        return  Coords{(int)cords.x / CHUNK_SIZE, (int)cords.y / CHUNK_SIZE};
+    };
 
-private:
-    static inline Coords worldCordsToChunkCoords(FCoords cords);
 };
 
 

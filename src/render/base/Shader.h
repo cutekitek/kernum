@@ -2,6 +2,7 @@
 
 #include <string>
 #include <../include/glad/glad.h>
+#include <glm/glm.hpp>
 
 class Shader {
 public:
@@ -12,12 +13,12 @@ public:
     void Unbind() const;
 
     GLuint GetID() const { return m_RendererID; }
-    void SetMat4(const std::string &name, float data[16]);
+    void SetMat4(const std::string &name, glm::mat4 &data);
     void SetVec2(const std::string &name, float data[2]);
     void SetFloat(const std::string &name, float data);
     void SetUInt(const std::string &name, uint32_t data);
     void SetInt(const std::string &name, int data);
-
+    static Shader FromFile(const std::string& vertexSrc, const std::string& fragmentSrc);
 
 private:
     GLuint m_RendererID;

@@ -1,5 +1,11 @@
 #include "Shader.h"
+
+#include <fstream>
 #include <iostream>
+#include <sstream>
+
+#include "glm/gtc/type_ptr.hpp"
+
 
 Shader::Shader(const std::string& vertexSrc, const std::string& fragmentSrc) {
     m_RendererID = CreateProgram(vertexSrc, fragmentSrc);
@@ -17,8 +23,8 @@ void Shader::Unbind() const {
     glUseProgram(0);
 }
 
-void Shader::SetMat4(const std::string &name, float data[16]) {
-    glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, data);
+void Shader::SetMat4(const std::string &name, glm::mat4 &data) {
+    glUniformMatrix4fv(glGetUniformLocation(m_RendererID, name.c_str()), 1, GL_FALSE, glm::value_ptr(data));
 }
 
 void Shader::SetVec2(const std::string &name, float data[2]) {
@@ -33,6 +39,16 @@ void Shader::SetUInt(const std::string &name, uint32_t data) {
 
 void Shader::SetInt(const std::string &name, int data) {
     glUniform1i(glGetUniformLocation(m_RendererID, name.c_str()), data);
+}
+
+Shader Shader::FromFile(const std::string &vertexSrc, const std::string &fragmentSrc) {
+    std::ifstream vertFile(vertexSrc);
+    std::stringstream vert;
+    vert << vertFile.rdbuf();
+    std::ifstream fragFile(fragmentSrc);
+    std::stringstream frag;
+    frag << fragFile.rdbuf();
+    return Shader(vert.str(), frag.str());
 }
 
 

@@ -33,6 +33,7 @@ struct FCoords: SDL_FPoint {
     FCoords() : SDL_FPoint{0, 0} {}
     FCoords(float x, float y): SDL_FPoint{x, y} {}
     FCoords(int x, int y) : SDL_FPoint{(float)x, (float)y} {}
+    FCoords(double x, double y): SDL_FPoint{(float) x, (float) y} {}
 
     bool operator==(const FCoords &other) const {
         return x == other.x && y == other.y;

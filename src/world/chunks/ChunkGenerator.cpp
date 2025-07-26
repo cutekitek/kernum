@@ -9,7 +9,7 @@ ChunkGenerator::ChunkGenerator(const std::shared_ptr<GeneratorConfig>& config, c
     this->config = config;
     this->terrainNoise = FastNoiseLite();
     this->terrainNoise.SetSeed(seed);
-    this->terrainNoise.SetFrequency(0.01);
+    this->terrainNoise.SetFrequency(0.0035);
     this->terrainNoise.SetNoiseType(FastNoiseLite::NoiseType_OpenSimplex2S);
 }
 
