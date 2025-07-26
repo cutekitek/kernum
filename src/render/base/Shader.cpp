@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <sstream>
 
 #include "glm/gtc/type_ptr.hpp"
@@ -41,14 +42,16 @@ void Shader::SetInt(const std::string &name, int data) {
     glUniform1i(glGetUniformLocation(m_RendererID, name.c_str()), data);
 }
 
-Shader Shader::FromFile(const std::string &vertexSrc, const std::string &fragmentSrc) {
+std::shared_ptr<Shader> Shader::FromFile(const std::string &vertexSrc, const std::string &fragmentSrc) {
     std::ifstream vertFile(vertexSrc);
     std::stringstream vert;
     vert << vertFile.rdbuf();
     std::ifstream fragFile(fragmentSrc);
     std::stringstream frag;
     frag << fragFile.rdbuf();
-    return Shader(vert.str(), frag.str());
+    auto vertStr = vert.str();
+    auto fragStr = frag.str();
+    return std::make_shared<Shader>(vertStr, fragStr);
 }
 
 

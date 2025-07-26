@@ -114,8 +114,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     auto io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
     ImGui::StyleColorsDark();
 
@@ -144,9 +144,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     auto chunkGenerator = std::make_shared<ChunkGenerator>(cfg, 0);
     chunkManager = std::make_shared<ChunkManager>(chunkGenerator, tileManager);
 
-    auto shader = std::make_shared<Shader>(vert, frag);
+    auto tileRendererShader =  Shader::FromFile("resources/shaders/tilerenderer.vert.glsl", "resources/shaders/tilerenderer.frag.glsl");
     camera =  new Camera(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 1.0);
-    worldRenderer = std::make_shared<WorldRenderer>(shader, chunkManager, tileManager, camera);
+    worldRenderer = std::make_shared<WorldRenderer>(tileRendererShader, chunkManager, tileManager, camera);
     return SDL_APP_CONTINUE;
 }
 
