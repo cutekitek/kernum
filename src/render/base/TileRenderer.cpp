@@ -1,12 +1,4 @@
 #include "TileRenderer.h"
-#include <glm/ext/matrix_clip_space.hpp>
-
-
-TileRenderer::~TileRenderer() {
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
-    glDeleteBuffers(1, &instanceVbo);
-}
 
 void TileRenderer::init(const std::vector<TileInfo>& tiles) {
     glGenVertexArrays(1, &vao);

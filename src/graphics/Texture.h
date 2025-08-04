@@ -9,11 +9,10 @@
 
 class Texture {
 
-private:
-    GLuint m_parentAtlasID;
-    glm::vec4 m_uvs;
-    int m_width;
-    int m_height;
+GLuint m_parentAtlasID;
+glm::vec4 m_uvs;
+int m_width;
+int m_height;
 
 public:
     // Calculates and stores normalized UVs from pixel coordinates.

@@ -6,6 +6,7 @@
 #define GENERATORCONFIG_H
 #include "../tiles/Tile.h"
 #include "../tiles/TileManager.h"
+#include "world/entities/ores/Ore.h"
 
 enum class TerrainType{
     SURFACE,
@@ -23,7 +24,7 @@ class GeneratorConfig {
 
     static TerrainType GetTerrainTypeByNoise(float noise);
     const Tile* GetTileByNoise(TerrainType type, float noise);
-
+    const Ore* GetOreByNoise(TerrainType type, float noise);
 };
 
 

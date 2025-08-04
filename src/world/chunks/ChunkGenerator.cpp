@@ -1,10 +1,9 @@
 #include "ChunkGenerator.h"
 
-#include <iostream>
 #include <memory>
 
 
-ChunkGenerator::ChunkGenerator(const std::shared_ptr<GeneratorConfig>& config, const int seed)
+ChunkGenerator::ChunkGenerator(const std::shared_ptr<GeneratorConfig>& config, int seed, const std::vector<OreGenerator>& ores) : ores(ores)
  {
     this->config = config;
     this->terrainNoise = FastNoiseLite();
@@ -15,15 +14,26 @@ ChunkGenerator::ChunkGenerator(const std::shared_ptr<GeneratorConfig>& config, c
 
 
 std::unique_ptr<Chunk> ChunkGenerator::NewChunk(Coords cords) {
-    std::array<uint32_t, CHUNK_SIZE * CHUNK_SIZE> tiles{};
+    auto chunk =  std::make_unique<Chunk>(cords);
     for (int i = 0; i < CHUNK_SIZE; i++) {
         for (int j = 0; j < CHUNK_SIZE; j++) {
-            float terrainNoiseVal = terrainNoise.GetNoise((float)cords.x * CHUNK_SIZE + i, (float) cords.y * CHUNK_SIZE + j);
+            auto tileCords = FCoords{(float)cords.x * CHUNK_SIZE + i, (float) cords.y * CHUNK_SIZE + j};
+            float terrainNoiseVal = terrainNoise.GetNoise(tileCords.x, tileCords.y);
             auto terrainType = this->config->GetTerrainTypeByNoise(terrainNoiseVal);
             auto tile = this->config->GetTileByNoise(terrainType, terrainNoiseVal);
-            tiles[j * CHUNK_SIZE + i] = tile->get_tile_id();
+            chunk->SetTile(*tile, Coords{i, j});
+            if (tile->is_solid()) {
+                for (auto gen : this->ores) {
+                    if (auto ore =  gen.Generate(tileCords); ore != nullptr) {
+                        chunk->AddEntity(std::move(ore));
+                        break;
+                    }
+                }
+            }
         }
     }
 
-    return std::make_unique<Chunk>(cords, tiles);
+    return chunk;
 }
+
+

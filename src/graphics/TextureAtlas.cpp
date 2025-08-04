@@ -85,7 +85,7 @@ const Texture* TextureAtlas::load_texture(const std::string& fileName) {
     auto fullPath = (m_basePath / fileName).string();
     int width, height, channels;
     // Force 4 channels (RGBA) for consistency
-    unsigned char* data = stbi_load(fullPath.c_str(), &width, &height, &channels, 4);
+    unsigned char* data = stbi_load(fullPath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
     if (!data) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to load texture file '%s'! STB_image Error", fullPath.c_str());
         return nullptr;

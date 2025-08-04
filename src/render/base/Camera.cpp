@@ -42,7 +42,7 @@ void Camera::DispatchEvent(const SDL_Event* event) {
             // (Zoom logic remains the same)
             if (event->wheel.y > 0) { m_zoom *= 2.0f; }
             else if (event->wheel.y < 0) { m_zoom /= 2.0f; }
-            m_zoom = std::max(0.25f, std::min(m_zoom, 2.0f));
+            m_zoom = std::max(0.125f, std::min(m_zoom, 2.0f));
             updateAfterMove();
             break;
         }

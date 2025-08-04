@@ -15,8 +15,8 @@ public:
         return tile_id;
     }
 
-    [[nodiscard]] const Texture& get_texture() const {
-        return texture;
+    [[nodiscard]] const std::vector<const Texture*>& get_texture_variants() const {
+        return variants;
     }
 
     bool is_solid() const {
@@ -27,14 +27,12 @@ public:
         return name;
     }
 
-    Tile(const uint32_t tileId, const std::string& name, const Texture& texture, const bool solid) : tile_id(tileId), texture(texture), name(name), solid(solid) {
-
-    }
+    Tile(const uint32_t tileId, const std::string& name, const std::vector<const Texture*>& variants, const bool solid) : tile_id(tileId), variants(variants), name(name), solid(solid) {}
 
 
 private:
     uint32_t tile_id;
-    const Texture& texture;
+    std::vector<const Texture*> variants;
     const std::string& name;
     bool solid;
 

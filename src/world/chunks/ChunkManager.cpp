@@ -13,7 +13,6 @@ const Chunk* ChunkManager::LoadChunk(Coords chunkCoords) {
     if (chunk == nullptr) {
         auto generatedChunk = generator->NewChunk(chunkCoords);
         this->chunks[chunkCoords] = std::move(generatedChunk);
-        std::cout << "Chunk created at" << chunkCoords.x << " " << chunkCoords.y << std::endl;
         return this->chunks[chunkCoords].get();
     }
 

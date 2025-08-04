@@ -13,6 +13,8 @@ struct TileInfo {
 };
 
 class TileRenderer {
+    static inline std::shared_ptr<Shader> shader;
+
     GLfloat quadVertices[12] = { 0.0f, 1.0f,
     1.0f, 0.0f,
     0.0f, 0.0f,
@@ -21,25 +23,29 @@ class TileRenderer {
     1.0f, 1.0f,
     1.0f, 0.0f};
 
-
-    std::shared_ptr<Shader> shader;
-    std::shared_ptr<TileManager> tileManager;
-    Camera* camera;
-
+    const Camera* camera;
+    const TextureAtlas *atlas;
     GLuint shaderProgram;
     GLuint vao;
     GLuint vbo;
     GLuint instanceVbo;
     int tilesCount;
 
+
     public:
-    TileRenderer(const std::shared_ptr<Shader> &shader, const std::shared_ptr<TileManager> &tile_manager,  Camera *camera, const std::vector<TileInfo>& tiles)
-        : shader(shader),
-          tileManager(tile_manager),camera(camera),tilesCount(tiles.size()) {
+    TileRenderer(const TextureAtlas *atlas, const Camera *camera, const std::vector<TileInfo>& tiles)
+        : camera(camera),atlas(atlas),tilesCount(tiles.size()) {
+        if (!shader) {
+            shader = Shader::FromFile("resources/shaders/tilerenderer.vert.glsl", "resources/shaders/tilerenderer.frag.glsl");
+        }
         init(tiles);
     }
 
-    ~TileRenderer();
+    ~TileRenderer() {
+        glDeleteVertexArrays(1, &vao);
+        glDeleteBuffers(1, &vbo);
+        glDeleteBuffers(1, &instanceVbo);
+    };
 
     void Render() const {
         shader->Bind();
@@ -47,7 +53,7 @@ class TileRenderer {
         shader->SetMat4("projection", proj);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, tileManager->GetTextureAtlas()->get_atlas_id());
+        glBindTexture(GL_TEXTURE_2D, atlas->get_texture_id());
         glBindVertexArray(vao);
         glBindBuffer(GL_ARRAY_BUFFER, instanceVbo);
         glDrawArraysInstanced(GL_TRIANGLES, 0, 6, tilesCount);
@@ -63,6 +69,7 @@ class TileRenderer {
 
     private:
     void init(const std::vector<TileInfo>& tiles);
+
 };
 
 

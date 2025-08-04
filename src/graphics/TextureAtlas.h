@@ -41,7 +41,7 @@ public:
     const Texture* load_texture(const std::string& fileName);
 
     // Getter for the underlying OpenGL texture ID.
-    [[nodiscard]] GLuint get_atlas_id() const {
+    [[nodiscard]] GLuint get_texture_id() const {
         return m_atlasTextureID;
     }
 

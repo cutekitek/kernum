@@ -1,13 +1,8 @@
-//
-// Created by user on 13.07.2025.
-//
-
 #ifndef TILEMANAGER_H
 #define TILEMANAGER_H
-#include <cstdint>
+
 #include <filesystem>
 #include <memory>
-#include <optional>
 #include <unordered_map>
 #include <vector>
 
@@ -29,7 +24,7 @@ public:
 
     ~TileManager() = default;
 
-    const Tile* CreateTile(const std::string &name, const std::string &textureName, bool solid);
+    const Tile* CreateTile(const std::string& name, bool solid, const std::vector<std::string>& variants);
 
     const std::vector<Tile> & GetTiles();
 

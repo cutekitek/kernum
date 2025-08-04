@@ -20,46 +20,6 @@ std::shared_ptr<WorldRenderer> worldRenderer;
 Camera *camera;
 
 
-const char* frag = R"(
-#version 430 core
-out vec4 FragColor;
-
-in vec2 TexCoord;
-
-uniform sampler2D tilesetTexture;
-
-void main()
-{
-    FragColor = texture(tilesetTexture, TexCoord);
-}
-)";
-
-const char* vert = R"(
-#version 430 core
-
-layout (location = 0) in vec2 aPos;
-
-layout (location = 1) in vec4 aInstanceUVs;
-layout (location = 2) in vec4 aInstanceTransform;
-
-out vec2 TexCoord;
-
-uniform mat4 projection;
-
-void main()
-{
-    vec2 instanceWorldPos = aInstanceTransform.xy;
-    vec2 instanceSize = aInstanceTransform.zw;
-
-    vec2 finalPos = (aPos * instanceSize) + instanceWorldPos;
-
-    gl_Position = projection * vec4(finalPos, 0.0, 1.0);
-
-    TexCoord.x = mix(aInstanceUVs.x, aInstanceUVs.z, aPos.x);
-    TexCoord.y = mix(aInstanceUVs.y, aInstanceUVs.w, aPos.y);
-}
-)";
-
 void GLAPIENTRY
 MessageCallback( GLenum source,
                  GLenum type,
@@ -128,6 +88,8 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     // glEnable(GL_DEBUG_OUTPUT);
     // glDebugMessageCallback( MessageCallback, 0 );
     glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     if (!ImGui_ImplSDL3_InitForOpenGL(window, context)) {
         std::cout << "Failed to ImGui_ImplSDL3_InitForOpenGL" << std::endl;
         return SDL_APP_FAILURE;
@@ -138,15 +100,22 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     };
 
     tileManager = std::make_shared<TileManager>();
-    tileManager->CreateTile("grass", "grass.png", true);
-    tileManager->CreateTile("water", "water.png", true);
+    tileManager->CreateTile("grass", true, std::vector<std::string>{"grass1.png", "grass2.png", "grass3.png"});
+
+    tileManager->CreateTile("water", false, std::vector<std::string>{"water1.png"} );
+    auto atlas = std::make_shared<TextureAtlas>("resources/textures", 1024, 1024);
+    auto copper = atlas->load_texture("tiles/copper.png");
+    auto iron = atlas->load_texture("tiles/iron.png");
+    auto tin = atlas->load_texture("tiles/tin.png");
     auto cfg = std::make_shared<GeneratorConfig>(tileManager);
-    auto chunkGenerator = std::make_shared<ChunkGenerator>(cfg, 0);
+    auto ores = std::vector{OreGenerator(10, 100, 10, 0.12, copper), OreGenerator(10, 100, 11, 0.12, tin), OreGenerator(10, 100, 12, 0.12, iron)};
+    // auto ores = std::vector<OreGenerator>{};
+    auto chunkGenerator = std::make_shared<ChunkGenerator>(cfg, 0, ores);
     chunkManager = std::make_shared<ChunkManager>(chunkGenerator, tileManager);
 
-    auto tileRendererShader =  Shader::FromFile("resources/shaders/tilerenderer.vert.glsl", "resources/shaders/tilerenderer.frag.glsl");
+
     camera =  new Camera(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 1.0);
-    worldRenderer = std::make_shared<WorldRenderer>(tileRendererShader, chunkManager, tileManager, camera);
+    worldRenderer = std::make_shared<WorldRenderer>(chunkManager, tileManager, atlas, camera);
     return SDL_APP_CONTINUE;
 }
 
@@ -178,7 +147,6 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     worldRenderer->Render();
 
 
-
     auto bbox = camera->BoundingBox();
     ImGui::Text("camera x0=%f y0=%f w=%f h=%f z=%f", bbox.x, bbox.y, bbox.width, bbox.height, camera->GetZoom());
 
@@ -193,12 +161,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     return SDL_APP_CONTINUE;
 }
 
-
-/* This function runs once at shutdown. */
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
-    // --- MODIFICATION START ---
-    // Add ImGui cleanup before shutting down SDL
     ImGui_ImplSDL3_Shutdown();
     ImGui::DestroyContext();
 }

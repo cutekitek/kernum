@@ -22,3 +22,7 @@ const Tile* GeneratorConfig::GetTileByNoise(TerrainType type, float noise) {
             return this->tileManager->GetTileByName("grass");
     }
 }
+
+const Ore * GeneratorConfig::GetOreByNoise(TerrainType type, float noise) {
+    
+}

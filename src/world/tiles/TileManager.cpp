@@ -7,15 +7,19 @@
 #include <memory>
 #include <optional>
 
-const Tile* TileManager::CreateTile(const std::string& name, const std::string& textureName, bool solid) {
+const Tile* TileManager::CreateTile(const std::string& name, bool solid, const std::vector<std::string>& variants) {
     uint32_t tileId = this->tiles.size();
-
-    auto texture = textureAtlas->load_texture((baseTexturePath / textureName).string());
-    if (texture == nullptr) {
-        return nullptr;
+    auto textures = std::vector<const Texture*>();
+    for (auto& filename : variants) {
+        auto text = textureAtlas->load_texture((baseTexturePath / filename).string());
+        if (text == nullptr) {
+            return nullptr;
+        }
+        textures.push_back(text);
     }
 
-    auto tile = Tile(tileId, name, *texture, solid);
+
+    auto tile = Tile(tileId, name, textures, solid);
     this->tiles.push_back(tile);
     this->tilesMap[name] = tileId;
     return &this->tiles[tileId];
